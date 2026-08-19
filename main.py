@@ -3,6 +3,7 @@ from rich.panel import Panel
 from rich.table import Table
 
 from modules.domain import domain_info
+from modules.dns_lookup import dns_lookup
 
 console = Console()
 
@@ -12,7 +13,7 @@ def banner():
         Panel.fit(
             "[bold cyan]ORION OSINT[/bold cyan]\n"
             "[white]Open-Source Intelligence Toolkit[/white]\n"
-            "[dim]Version 1.0[/dim]",
+            "[dim]Version 1.1[/dim]",
             border_style="cyan",
         )
     )
@@ -29,7 +30,7 @@ def menu():
     table.add_column("Status", style="green")
 
     table.add_row("1", "Domain Information", "READY")
-    table.add_row("2", "DNS Lookup", "COMING SOON")
+    table.add_row("2", "DNS Lookup", "READY")
     table.add_row("3", "IP Information", "COMING SOON")
     table.add_row("4", "HTTP Headers", "COMING SOON")
     table.add_row("5", "File Hash", "COMING SOON")
@@ -56,7 +57,9 @@ def main():
             break
 
         elif choice == "1":
-            console.print("\n[bold cyan]DOMAIN INFORMATION[/bold cyan]")
+            console.print(
+                "\n[bold cyan]DOMAIN INFORMATION[/bold cyan]"
+            )
 
             domain = console.input(
                 "[white]Enter domain: [/white]"
@@ -64,6 +67,26 @@ def main():
 
             if domain:
                 domain_info(domain)
+            else:
+                console.print(
+                    "[red]Please enter a domain.[/red]"
+                )
+
+            console.input(
+                "\n[dim]Press ENTER to continue...[/dim]"
+            )
+
+        elif choice == "2":
+            console.print(
+                "\n[bold cyan]DNS LOOKUP[/bold cyan]"
+            )
+
+            domain = console.input(
+                "[white]Enter domain: [/white]"
+            ).strip()
+
+            if domain:
+                dns_lookup(domain)
             else:
                 console.print(
                     "[red]Please enter a domain.[/red]"
