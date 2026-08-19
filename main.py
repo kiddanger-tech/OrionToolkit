@@ -4,6 +4,8 @@ from rich.table import Table
 
 from modules.domain import domain_info
 from modules.dns_lookup import dns_lookup
+from modules.ip_lookup import ip_lookup, show_my_private_ip
+from modules.headers import http_headers
 
 console = Console()
 
@@ -13,7 +15,7 @@ def banner():
         Panel.fit(
             "[bold cyan]ORION OSINT[/bold cyan]\n"
             "[white]Open-Source Intelligence Toolkit[/white]\n"
-            "[dim]Version 1.1[/dim]",
+            "[dim]Version 1.3[/dim]",
             border_style="cyan",
         )
     )
@@ -31,12 +33,19 @@ def menu():
 
     table.add_row("1", "Domain Information", "READY")
     table.add_row("2", "DNS Lookup", "READY")
-    table.add_row("3", "IP Information", "COMING SOON")
-    table.add_row("4", "HTTP Headers", "COMING SOON")
-    table.add_row("5", "File Hash", "COMING SOON")
+    table.add_row("3", "IP Information", "READY")
+    table.add_row("4", "My Private IP", "READY")
+    table.add_row("5", "HTTP Headers", "READY")
+    table.add_row("6", "File Hash", "COMING SOON")
     table.add_row("0", "Exit", "READY")
 
     console.print(table)
+
+
+def pause():
+    console.input(
+        "\n[dim]Press ENTER to continue...[/dim]"
+    )
 
 
 def main():
@@ -72,9 +81,7 @@ def main():
                     "[red]Please enter a domain.[/red]"
                 )
 
-            console.input(
-                "\n[dim]Press ENTER to continue...[/dim]"
-            )
+            pause()
 
         elif choice == "2":
             console.print(
@@ -92,18 +99,53 @@ def main():
                     "[red]Please enter a domain.[/red]"
                 )
 
-            console.input(
-                "\n[dim]Press ENTER to continue...[/dim]"
+            pause()
+
+        elif choice == "3":
+            console.print(
+                "\n[bold cyan]IP INFORMATION[/bold cyan]"
             )
+
+            ip_address = console.input(
+                "[white]Enter IP address: [/white]"
+            ).strip()
+
+            if ip_address:
+                ip_lookup(ip_address)
+            else:
+                console.print(
+                    "[red]Please enter an IP address.[/red]"
+                )
+
+            pause()
+
+        elif choice == "4":
+            show_my_private_ip()
+            pause()
+
+        elif choice == "5":
+            console.print(
+                "\n[bold cyan]HTTP HEADERS[/bold cyan]"
+            )
+
+            url = console.input(
+                "[white]Enter website: [/white]"
+            ).strip()
+
+            if url:
+                http_headers(url)
+            else:
+                console.print(
+                    "[red]Please enter a website.[/red]"
+                )
+
+            pause()
 
         else:
             console.print(
                 "\n[yellow]This module is not available yet.[/yellow]"
             )
-
-            console.input(
-                "\n[dim]Press ENTER to continue...[/dim]"
-            )
+            pause()
 
 
 if __name__ == "__main__":
