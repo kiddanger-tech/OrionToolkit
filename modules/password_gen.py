@@ -3,10 +3,10 @@
 
 import secrets
 import string
+from math import log2
 from rich.console import Console
 from rich.table import Table
 from rich.panel import Panel
-from rich.columns import Columns
 
 console = Console()
 
@@ -22,21 +22,17 @@ def generate_password(length=16, use_lower=True, use_upper=True, use_digits=True
         chars += string.digits
     if use_symbols:
         chars += string.punctuation
-
     if not chars:
         chars = string.ascii_letters + string.digits
 
     passwords = []
     for _ in range(count):
-        pwd = "".join(secrets.choice(chars) for _ in range(length))
-        passwords.append(pwd)
-
+        passwords.append("".join(secrets.choice(chars) for _ in range(length)))
     return passwords
 
 
 def estimate_entropy(length, charset_size):
     """Calculate entropy in bits."""
-    from math import log2
     return length * log2(charset_size)
 
 
@@ -55,7 +51,6 @@ def menu_password_gen():
 
     passwords = generate_password(length, use_lower, use_upper, use_digits, use_symbols, count)
 
-    # Calculate charset size
     charset_size = 0
     if use_lower:
         charset_size += 26
@@ -72,13 +67,10 @@ def menu_password_gen():
     table.add_column("#", style="bold cyan")
     table.add_column("Password", style="white")
     table.add_column("Entropy", style="green")
-
     for i, pwd in enumerate(passwords, 1):
         table.add_row(str(i), pwd, f"{entropy:.1f} bits")
-
     console.print(table)
 
-    # Strength indicator
     if entropy < 40:
         strength = "[red]Weak[/red]"
     elif entropy < 60:
