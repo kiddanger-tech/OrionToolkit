@@ -35,7 +35,6 @@ def crtsh_enum(domain):
 def dns_bruteforce(domain, wordlist, threads=20):
     """Brute-force subdomains using a wordlist and DNS resolution."""
     found = []
-    resolved = 0
 
     def check_sub(sub):
         target = f"{sub}.{domain}"
@@ -49,8 +48,7 @@ def dns_bruteforce(domain, wordlist, threads=20):
     with Progress(
         SpinnerColumn(),
         TextColumn("[progress.description]{task.description}"),
-        console=console,
-        transient=True,
+        console=console, transient=True,
     ) as progress:
         progress.add_task("[cyan]Brute-forcing subdomains...", total=None)
         with ThreadPoolExecutor(max_workers=threads) as executor:
@@ -59,15 +57,12 @@ def dns_bruteforce(domain, wordlist, threads=20):
                 result = future.result()
                 if result:
                     found.append(result)
-                    resolved += 1
-
     return found
 
 
 def menu_subdomain():
     """Interactive menu for subdomain enumeration."""
     console.print(Panel.fit("[bold cyan]SUBDOMAIN ENUMERATION[/bold cyan]", border_style="cyan"))
-
     domain = console.input("[white]Domain: [/white]").strip()
     if not domain:
         console.print("[red]Domain is required.[/red]")
@@ -77,7 +72,6 @@ def menu_subdomain():
     console.print("[dim]2. DNS wordlist brute-force (active, slower)[/dim]")
     console.print("[dim]3. Both[/dim]")
     mode = console.input("[white]Mode [3]: [/white]").strip() or "3"
-
     results = set()
 
     if mode in ("1", "3"):
@@ -94,7 +88,6 @@ def menu_subdomain():
         except FileNotFoundError:
             console.print(f"[red]File not found: {wl_path}[/red]")
             return
-
         console.print(f"\n[cyan]Brute-forcing {len(wordlist)} subdomains...[/cyan]")
         brute_results = dns_bruteforce(domain, wordlist)
         console.print(f"[green]Resolved {len(brute_results)} subdomains via DNS[/green]")
@@ -109,9 +102,7 @@ def menu_subdomain():
     table = Table(title=f"SUBDOMAINS FOR {domain}", border_style="cyan")
     table.add_column("#", style="bold cyan")
     table.add_column("Subdomain", style="white")
-
     for i, sub in enumerate(sorted_results, 1):
         table.add_row(str(i), sub)
-
     console.print(table)
     console.print(f"\n[bold green]Total: {len(sorted_results)} subdomains[/bold green]")
