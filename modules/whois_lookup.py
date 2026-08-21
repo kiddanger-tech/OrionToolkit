@@ -19,16 +19,10 @@ WHOIS_SERVERS = {
     "dev": "whois.nic.dev",
     "app": "whois.nic.google",
     "xyz": "whois.nic.xyz",
-    "online": "whois.nic.online",
     "ai": "whois.nic.ai",
-    "in": "whois.registry.in",
     "uk": "whois.nic.uk",
     "de": "whois.denic.de",
     "ru": "whois.tcinet.ru",
-    "br": "whois.registro.br",
-    "jp": "whois.jprs.jp",
-    "fr": "whois.nic.fr",
-    "au": "whois.audns.net.au",
 }
 
 
@@ -60,34 +54,28 @@ def whois_query(domain, server="whois.iana.org", port=43, timeout=10):
 def menu_whois():
     """Interactive whois lookup."""
     console.print(Panel.fit("[bold cyan]WHOIS LOOKUP[/bold cyan]", border_style="cyan"))
-
     domain = console.input("[white]Domain: [/white]").strip()
     if not domain:
         console.print("[red]Domain is required.[/red]")
         return
 
-    # Remove protocol and path if pasted as URL
     domain = domain.replace("http://", "").replace("https://", "").split("/")[0].split(":")[0]
 
     console.print(f"\n[cyan]Looking up {domain}...[/cyan]")
-
     server = get_whois_server(domain)
     console.print(f"[dim]Whois server: {server}[/dim]")
 
     raw = whois_query(domain, server)
-
     if raw.startswith("Error"):
         console.print(f"[red]{raw}[/red]")
         return
 
-    # Parse key fields
     info = {}
-    lines = raw.split("\n")
-    for line in lines:
+    for line in raw.split("\n"):
         line_lower = line.lower()
         for key in ["domain name", "registrar", "creation date", "expiry date",
-                     "registrant", "admin", "name server", "status", "dnssec",
-                     "registrant organization", "registrant country", "registrant email"]:
+                     "registrant organization", "registrant country", "registrant email",
+                     "name server", "status", "dnssec"]:
             if line_lower.startswith(key):
                 parts = line.split(":", 1)
                 if len(parts) == 2:
@@ -101,7 +89,6 @@ def menu_whois():
             table.add_row(key.capitalize(), val)
         console.print(table)
     else:
-        # Show raw output if parsing fails
         console.print(Panel(raw[:3000], title=f"Raw Whois — {domain}", border_style="cyan"))
 
-    console.print(f"\n[dim]Server: {server} | Lines: {len(lines)}[/dim]")
+    console.print(f"\n[dim]Server: {server}[/dim]")
