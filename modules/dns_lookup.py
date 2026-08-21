@@ -1,70 +1,55 @@
+# modules/dns_lookup.py
+# OrionToolkit - DNS Lookup Module
+
 import dns.resolver
 from rich.console import Console
-from rich.table import Table
 
 console = Console()
 
 
-def dns_lookup(domain):
-    domain = domain.strip().lower()
+class DNSLookup:
+    """Perform DNS record lookups for various record types."""
 
-    domain = domain.replace("https://", "")
-    domain = domain.replace("http://", "")
-    domain = domain.split("/")[0]
-
-    console.print(
-        f"\n[cyan]DNS lookup:[/cyan] [bold]{domain}[/bold]\n"
-    )
-
-    record_types = [
-        "A",
-        "AAAA",
-        "MX",
-        "NS",
-        "TXT",
-        "CNAME",
+    RECORD_TYPES = [
+        "A", "AAAA", "CNAME", "MX", "NS", "TXT",
+        "SOA", "CAA", "SRV", "PTR", "CERT", "DNAME",
+        "SSHFP", "TLSA", "NAPTR",
     ]
 
-    table = Table(
-        title=f"DNS Records — {domain}",
-        border_style="cyan",
-    )
+    def __init__(self, domain: str):
+        self.domain = domain.strip().lower()
+        self.resolver = dns.resolver.Resolver()
+        self.resolver.timeout = 5
+        self.resolver.lifetime = 5
 
-    table.add_column("Type", style="bold cyan")
-    table.add_column("Records", style="white")
-
-    for record_type in record_types:
+    def query(self, record_type: str) -> list:
+        """Query a specific DNS record type."""
+        results = []
         try:
-            answers = dns.resolver.resolve(
-                domain,
-                record_type
-            )
+            answers = self.resolver.resolve(self.domain, record_type)
+            for rdata in answers:
+                results.append(rdata.to_text())
+        except dns.resolver.NoAnswer:
+            pass
+        except dns.resolver.NXDOMAIN:
+            pass
+        except dns.resolver.Timeout:
+            pass
+        except Exception:
+            pass
+        return results
 
-            records = []
+    def query_all(self) -> dict:
+        """Query all common DNS record types and return dict of results."""
+        results = {}
 
-            for answer in answers:
-                records.append(str(answer))
+        for rtype in self.RECORD_TYPES:
+            records = self.query(rtype)
+            if records:
+                results[rtype] = records
 
-            table.add_row(
-                record_type,
-                "\n".join(records)
-            )
+        # Add a summary if nothing found
+        if not results:
+            results["status"] = ["No DNS records found"]
 
-        except (
-            dns.resolver.NoAnswer,
-            dns.resolver.NXDOMAIN,
-            dns.resolver.NoNameservers,
-            dns.resolver.LifetimeTimeout,
-        ):
-            table.add_row(
-                record_type,
-                "[dim]No record found[/dim]"
-            )
-
-        except Exception as error:
-            table.add_row(
-                record_type,
-                f"[red]Error: {error}[/red]"
-            )
-
-    console.print(table)
+        return results
