@@ -1,58 +1,51 @@
-import socket
+# modules/domain.py
+# OrionToolkit - Domain Analysis Module
 
+import socket
 from rich.console import Console
-from rich.table import Table
 
 console = Console()
 
 
-def domain_info(domain):
-    domain = domain.strip().lower()
+class DomainAnalyzer:
+    """Analyze domain information including hostname, aliases, and IP addresses."""
 
-    # Remove accidental protocol/path
-    domain = domain.replace("https://", "")
-    domain = domain.replace("http://", "")
-    domain = domain.split("/")[0]
+    def __init__(self, domain: str):
+        self.domain = domain.strip().lower()
+        self.results = {}
 
-    console.print(
-        f"\n[cyan]Looking up:[/cyan] [bold]{domain}[/bold]\n"
-    )
+    def analyze(self) -> dict:
+        """Perform full domain analysis and return results dict."""
+        self.results = {
+            "domain": self.domain,
+            "ip_addresses": [],
+            "aliases": [],
+            "errors": [],
+        }
 
-    try:
-        hostname, aliases, addresses = socket.gethostbyname_ex(domain)
+        try:
+            info = socket.gethostbyname_ex(self.domain)
+            self.results["canonical_name"] = info[0]
+            self.results["aliases"] = info[1]
+            self.results["ip_addresses"] = info[2]
+            self.results["ip_count"] = len(info[2])
+        except socket.gaierror:
+            self.results["errors"].append("Could not resolve domain")
+        except Exception as e:
+            self.results["errors"].append(str(e))
 
-        table = Table(
-            title="Domain Information",
-            border_style="cyan",
-        )
+        # Try to get additional IP info for each address
+        ip_info = {}
+        for ip in self.results.get("ip_addresses", []):
+            try:
+                host = socket.gethostbyaddr(ip)
+                ip_info[ip] = host[0]
+            except (socket.herror, socket.gaierror):
+                ip_info[ip] = "No reverse DNS"
+            except Exception:
+                ip_info[ip] = "Unknown"
 
-        table.add_column("Field", style="bold cyan")
-        table.add_column("Value", style="white")
+        if ip_info:
+            self.results["reverse_dns"] = ip_info
 
-        table.add_row("Domain", domain)
-        table.add_row("Hostname", hostname)
-
-        if aliases:
-            table.add_row("Aliases", ", ".join(aliases))
-        else:
-            table.add_row("Aliases", "None")
-
-        if addresses:
-            table.add_row(
-                "IP Addresses",
-                "\n".join(addresses)
-            )
-        else:
-            table.add_row("IP Addresses", "None")
-
-        console.print(table)
-
-    except socket.gaierror:
-        console.print(
-            "\n[bold red]Could not resolve this domain.[/bold red]"
-        )
-
-    except Exception as error:
-        console.print(
-            f"\n[bold red]Error:[/bold red] {error}"
-        )
+        return self.results
