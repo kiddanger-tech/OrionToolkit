@@ -59,11 +59,15 @@ OrionToolkit/
     ├── ssl_checker.py   # SSL certificate checker
     ├── phone_lookup.py  # Phone number lookup
     └── password_gen.py  # Password generator
+---
 
+## 🚀 Installation
 
+### PC (Linux / Windows / macOS)
 
+```bash
 # Clone the repository
-git clone [https://github.com/kiddanger-tech/OrionToolkit.git](https://github.com/kiddanger-tech/OrionToolkit.git)
+git clone https://github.com/kiddanger-tech/OrionToolkit.git
 cd OrionToolkit
 
 # Install dependencies
@@ -71,7 +75,19 @@ pip install -r requirements.txt
 
 # Run the toolkit
 python main.py
+# Install Termux from F-Droid or Google Play
+# Then run:
+pkg update && pkg upgrade -y
+pkg install python git -y
 
+# Clone the repository
+git clone https://github.com/kiddanger-tech/OrionToolkit.git
+cd OrionToolkit
 
+# Install dependencies
+pip install -r requirements.txt
 
+# Run the toolkit
+python main.py
+termux-setup-storage
 
